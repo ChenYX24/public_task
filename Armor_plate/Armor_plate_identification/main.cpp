@@ -26,33 +26,18 @@ int highH = 64;
 int highS = 248;
 int highV = 255;
 //明确点用以框出物体
+
 void getTarget2dPoints(cv::RotatedRect object_rect, std::vector<Point2f>& object2d_point)
 {//获取像素坐标，顺时针，左上角为0号点
 	Point2f vertices[4];
 	object_rect.points(vertices);
 	Point2f lu, ld, ru, rd;
-	sort(vertices, vertices + 4, [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x < p2.x; });
-	if (vertices[0].y < vertices[1].y) {
-		lu = vertices[0];
-		ld = vertices[1];
-	}
-	else {
-		lu = vertices[1];
-		ld = vertices[0];
-	}
-	if (vertices[2].y < vertices[3].y) {
-		ru = vertices[2];
-		rd = vertices[3];
-	}
-	else {
-		ru = vertices[3];
-		rd = vertices[2];
-	}
+	sort(begin(vertices), end(vertices), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x + p1.y < p2.x + p2.y; });
+
 	object2d_point.clear();
-	object2d_point.push_back(lu);
-	object2d_point.push_back(ru);
-	object2d_point.push_back(rd);
-	object2d_point.push_back(ld);
+	for (int i = 0; i < 4; i++)
+		object2d_point.push_back(vertices[i]);
+
 }
 int main()
 {
@@ -109,8 +94,6 @@ int main()
 	createTrackbar("highV", "control", &highV, 255);
 
 	Mat src;
-	Mat rot;
-	Mat trans;
 	Mat element = getStructuringElement(MORPH_RECT, Size(3, 3));
 	int frame_counter = 1;//帧计数器
 	int count = cap.get(CAP_PROP_FRAME_COUNT);
@@ -123,8 +106,8 @@ int main()
 		double Z = 0;
 		double DIS = 0;
 		int size = 0;
-		vector<vector<Point2f>> points;
-
+		vector<Point2f> points;
+		Matx31f rot;
 		//**检测**//
 		Mat temp;
 		frame_counter += 1;
@@ -178,18 +161,32 @@ int main()
 			float h = rect.size.height;
 			float w = rect.size.width;
 			float radio = (h > w) ? h / w : w / h;
-			if (radio > 7 || radio < 2)
+			if (radio > 8 || radio < 2)
 			{
 				continue;
 			}
+			if (contourArea(contours.at(i)) < 30)
+			{
+				continue;
+			}
+
 			vector<Point2f> point(4);
 			rect.points(point.data());//返回rect中的四个顶点到<Point2f>数组中.
-			//for (int k = 0; k < 4; k++)//画矩形
-			//{
-			//	line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 0), 1, 8);
-			//}
+			for (int k = 0; k < 4; k++)//画矩形
+			{
+				line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 0), 1, 8);
+			}
 			getTarget2dPoints(rect, object2d_point);//返回二维像素坐标
-			points.push_back(point);
+			getTarget2dPoints(rect, point);//返回二维像素坐标
+			Point2f temp_p;
+			Point2f temp_p2;
+			temp_p.x = (point.at(0).x + point.at(1).x) / 2;
+			temp_p.y = (point.at(0).y + point.at(1).y) / 2;
+			temp_p2.x = (point.at(2).x + point.at(3).x) / 2;
+			temp_p2.y = (point.at(2).y + point.at(3).y) / 2;
+			points.push_back(temp_p);
+			points.push_back(temp_p2);
+
 
 			//**测距**//
 			/*float Distance = Width / rect.size.width * focal *2.54;
@@ -198,65 +195,88 @@ int main()
 			//Mat distortion_coeff = (Mat_<double>(4, 1) << -0.0872, 1.0592, -0.0033, 0.0010);//畸变矩阵
 
 			/*测试数据*/
-			Mat cam_matrix = (Mat_<double>(3, 3) << 1.2853517927598091e+03, 0, 3.1944768628958542e+02, 0, 1.2792339468697937e+03, 2.3929354061292258e+02, 0, 0, 1);
-			Mat distortion_coeff = (Mat_<double>(5, 1) << -6.3687295852461456e-01, -1.9748008790347320e+00, 3.0970703651800782e-02, 2.1944646842516919e-03, 0);
+			Matx33d cam_matrix = { 1.2853517927598091e+03,                       0, 3.1944768628958542e+02,
+								   0                     , 1.27920339468697937e+03, 2.3929354061292258e+02,
+								   0                     ,                       0,                      1 };
+			Matx<double, 5, 1> distortion_coeff = { -6.3687295852461456e-01, -1.9748008790347320e+00, 3.0970703651800782e-02, 2.1944646842516919e-03, 0 };
 			/*测试数据*/
-			solvePnP(point3d, object2d_point, cam_matrix, distortion_coeff, rot, trans);//PnP
-			double tx = trans.at<double>(0, 0);
-			double ty = trans.at<double>(1, 0);
-			double tz = trans.at<double>(2, 0);
+			Matx31f trans;
+			solvePnP(point3d, point, cam_matrix, distortion_coeff, rot, trans);//PnP
+			Matx33f rmat;
+			Rodrigues(rot, rmat);
+			double tx = trans(0);
+			double ty = trans(1);
+			double tz = trans(2);
 			double dis = sqrt(tx * tx + ty * ty + tz * tz);//计算距离
 
 			Point3f a(tx, ty, tz);
 			object.push_back(a);
 
-			if (j == 0)
+			/*if (j == 0)
 			{
 				putText(src, to_string(dis) + "cm " + to_string(tx) + " " + to_string(ty) + " " + to_string(tz), Point(50, 100), 1, 1, Scalar(0, 255, 100), 2);
 				j++;
-			}
+			}*/
 		}
 
 		/*画点*/
-		vector<Point2f> points_l(4);
+		Point2f points_l;
 		//for(int i=0;i<points.size();i++)
 		//	for(int k=0;k<4;k++)
 		//		points_f.push_back(points.at(i).at(k));
-		if (points.size() != 1)
+
+		if (points.size() == 4)
 		{
-			if (points.at(0).at(0).x > points.at(1).at(0).x)
-				swap(points.at(0), points.at(1));
-			sort(points.at(0).begin(), points.at(0).end(), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x < p2.x; });
-			sort(points.at(1).begin(), points.at(1).end(), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x < p2.x; });
-
-			circle(src, points.at(0).at(1), 3, Scalar(0, 255, 120), -1);//画点
-			points_l.at(0) = points.at(0).at(1);
-			if (pow((points.at(0).at(0).x - points.at(0).at(1).x), 2) + pow((points.at(0).at(0).y - points.at(0).at(1).y), 2) < pow((points.at(0).at(0).x - points.at(0).at(2).x), 2) + pow((points.at(0).at(0).y - points.at(0).at(2).y), 2))
+			for (int i = 0; i < points.size(); i++)
 			{
-				circle(src, points.at(0).at(2), 3, Scalar(0, 255, 120), -1);//画点
-				points_l.at(1) = points.at(0).at(2);
+				circle(src, points.at(i), 3, Scalar(0, 255, 120), -1);//画点
 			}
-			else
-			{
-				circle(src, points.at(0).at(0), 3, Scalar(0, 255, 120), -1);//画点
-				points_l.at(1) = points.at(0).at(0);
-			}
-			circle(src, points.at(1).at(2), 3, Scalar(0, 255, 120), -1);//画点
-			points_l.at(3) = points.at(1).at(2);
-			if (pow((points.at(1).at(2).x - points.at(1).at(3).x), 2) + pow((points.at(1).at(2).y - points.at(1).at(3).y), 2) < pow((points.at(1).at(0).x - points.at(1).at(2).x), 2) + pow((points.at(1).at(0).y - points.at(1).at(2).y), 2))
-			{
-				circle(src, points.at(1).at(0), 3, Scalar(0, 255, 120), -1);//画点
-				points_l.at(2) = points.at(1).at(0);
-			}
-			else
-			{
-				circle(src, points.at(1).at(3), 3, Scalar(0, 255, 120), -1);//画点
-				points_l.at(2) = points.at(1).at(3);
-			}
-
+			line(src, points.at(0), points.at(3), Scalar(0, 0, 255), 2);
+			line(src, points.at(1), points.at(2), Scalar(0, 0, 255), 2);
+			points_l = Point2f((points.at(0).x + points.at(3).x) / 2, (points.at(0).y + points.at(3).y) / 2);
+			circle(src, points_l, 3, Scalar(0, 255, 120), -1);
 		}
-		line(src, points_l.at(0), points_l.at(3), Scalar(0, 0, 255), 2);
-		line(src, points_l.at(1), points_l.at(2), Scalar(0, 0, 255), 2);
+
+
+
+
+
+		//if (points.size() != 1)
+		//{
+		//	if (points.at(0).at(0).x > points.at(1).at(0).x)
+		//		swap(points.at(0), points.at(1));
+		//	sort(points.at(0).begin(), points.at(0).end(), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x < p2.x; });
+		//	sort(points.at(1).begin(), points.at(1).end(), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x < p2.x; });
+
+		//	circle(src, points.at(0).at(1), 3, Scalar(0, 255, 120), -1);//画点
+		//	points_l.at(0) = points.at(0).at(1);
+		//	if (pow((points.at(0).at(0).x - points.at(0).at(1).x), 2) + pow((points.at(0).at(0).y - points.at(0).at(1).y), 2) < pow((points.at(0).at(0).x - points.at(0).at(2).x), 2) + pow((points.at(0).at(0).y - points.at(0).at(2).y), 2))
+		//	{
+		//		circle(src, points.at(0).at(2), 3, Scalar(0, 255, 120), -1);//画点
+		//		points_l.at(1) = points.at(0).at(2);
+		//	}
+		//	else
+		//	{
+		//		circle(src, points.at(0).at(0), 3, Scalar(0, 255, 120), -1);//画点
+		//		points_l.at(1) = points.at(0).at(0);
+		//	}
+		//	circle(src, points.at(1).at(2), 3, Scalar(0, 255, 120), -1);//画点
+		//	points_l.at(3) = points.at(1).at(2);
+		//	if (pow((points.at(1).at(2).x - points.at(1).at(3).x), 2) + pow((points.at(1).at(2).y - points.at(1).at(3).y), 2) < pow((points.at(1).at(0).x - points.at(1).at(2).x), 2) + pow((points.at(1).at(0).y - points.at(1).at(2).y), 2))
+		//	{
+		//		circle(src, points.at(1).at(0), 3, Scalar(0, 255, 120), -1);//画点
+		//		points_l.at(2) = points.at(1).at(0);
+		//	}
+		//	else
+		//	{
+		//		circle(src, points.at(1).at(3), 3, Scalar(0, 255, 120), -1);//画点
+		//		points_l.at(2) = points.at(1).at(3);
+		//	}
+
+		//}
+		//line(src, points_l.at(0), points_l.at(3), Scalar(0, 0, 255), 2);
+		//line(src, points_l.at(1), points_l.at(2), Scalar(0, 0, 255), 2);
+
 		size = object.size();
 		for (int i = 0; i < size; i++)
 		{
