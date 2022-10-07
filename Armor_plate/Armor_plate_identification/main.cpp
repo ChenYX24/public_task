@@ -107,17 +107,16 @@ int main()
 		double DIS = 0;
 		int size = 0;
 		vector<Point2f> points;
-		Matx31f rot;
 		//**检测**//
 		Mat temp;
-		frame_counter += 1;
-		cap.set(CAP_PROP_POS_FRAMES, frame_counter);//下一帧
-		//重放
-		if (frame_counter == count - 1)
-		{
-			frame_counter = 1;
-			cap.set(CAP_PROP_POS_FRAMES, 1);
-		}
+		//frame_counter += 1;
+		//cap.set(CAP_PROP_POS_FRAMES, frame_counter);//下一帧
+		////重放
+		//if (frame_counter == count - 1)
+		//{
+		//	frame_counter = 1;
+		//	cap.set(CAP_PROP_POS_FRAMES, 1);
+		//}
 		cap >> src;
 		cap >> temp;
 
@@ -130,8 +129,8 @@ int main()
 		//cvtColor(temp, temp, COLOR_BGR2GRAY);//灰度化
 		//GaussianBlur(temp, temp, Size(5, 5), 0, 0);//高斯滤波
 		//threshold(temp, temp, 254, 255, THRESH_BINARY);//二值化
-		cvtColor(temp, temp, COLOR_BGR2HSV);//转为HSV图
-		GaussianBlur(temp, temp, Size(7, 7), 0, 0);//高斯滤波
+		cvtColor(src, temp, COLOR_BGR2HSV);//转为HSV图
+		GaussianBlur(temp, temp, Size(7, 7), 5, 0);//高斯滤波
 		inRange(temp, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), temp);//二值化
 		//for (int i = 0; i < 2; i++)
 		//{
@@ -147,7 +146,6 @@ int main()
 		vector<Vec4i> hehierarchy;
 		findContours(temp, contours, hehierarchy, RETR_EXTERNAL, CHAIN_APPROX_NONE, Point());
 		//去掉小矩形
-		int j = 0;
 		/*矩形标出轮廓*/
 		for (int i = 0; i < contours.size(); i++)
 		{
@@ -194,29 +192,8 @@ int main()
 			//Mat cam_matrix = (Mat_<double>(3, 3) << 1211.0, -0.9, 342.2, 0, 1211.0, 241.5, 0, 0, 1);//内参矩阵
 			//Mat distortion_coeff = (Mat_<double>(4, 1) << -0.0872, 1.0592, -0.0033, 0.0010);//畸变矩阵
 
-			/*测试数据*/
-			Matx33d cam_matrix = { 1.2853517927598091e+03,                       0, 3.1944768628958542e+02,
-								   0                     , 1.27920339468697937e+03, 2.3929354061292258e+02,
-								   0                     ,                       0,                      1 };
-			Matx<double, 5, 1> distortion_coeff = { -6.3687295852461456e-01, -1.9748008790347320e+00, 3.0970703651800782e-02, 2.1944646842516919e-03, 0 };
-			/*测试数据*/
-			Matx31f trans;
-			solvePnP(point3d, point, cam_matrix, distortion_coeff, rot, trans);//PnP
-			Matx33f rmat;
-			Rodrigues(rot, rmat);
-			double tx = trans(0);
-			double ty = trans(1);
-			double tz = trans(2);
-			double dis = sqrt(tx * tx + ty * ty + tz * tz);//计算距离
 
-			Point3f a(tx, ty, tz);
-			object.push_back(a);
 
-			/*if (j == 0)
-			{
-				putText(src, to_string(dis) + "cm " + to_string(tx) + " " + to_string(ty) + " " + to_string(tz), Point(50, 100), 1, 1, Scalar(0, 255, 100), 2);
-				j++;
-			}*/
 		}
 
 		/*画点*/
@@ -227,20 +204,50 @@ int main()
 
 		if (points.size() == 4)
 		{
+
+			
+			//顺时针
+			swap(points[0], points[2]);
+			swap(points[1], points[2]);
 			for (int i = 0; i < points.size(); i++)
 			{
 				circle(src, points.at(i), 3, Scalar(0, 255, 120), -1);//画点
 			}
-			line(src, points.at(0), points.at(3), Scalar(0, 0, 255), 2);
-			line(src, points.at(1), points.at(2), Scalar(0, 0, 255), 2);
-			points_l = Point2f((points.at(0).x + points.at(3).x) / 2, (points.at(0).y + points.at(3).y) / 2);
+			
+			line(src, points.at(0), points.at(2), Scalar(0, 0, 255), 2);
+			line(src, points.at(1), points.at(3), Scalar(0, 0, 255), 2);
+			points_l = Point2f((points.at(0).x + points.at(2).x) / 2, (points.at(0).y + points.at(2).y) / 2);
 			circle(src, points_l, 3, Scalar(0, 255, 120), -1);
+			
+			
+			/*测试数据*/
+			Matx33d cam_matrix = { 1.6041191539594568e+03,                       0, 6.3983687194220943e+02,
+														0,  1.6047833493341714e+03, 5.1222951297937527e+02,
+														0,                       0,                      1 };
+			Matx<double, 5, 1> distortion_coeff = { -6.4910709385278609e-01,  8.6914328787426987e-01,
+													 5.1733428362687644e-03, -4.1111054148847371e-03, 0 };
+			/*测距*/
+			Matx31f tvec;
+			Matx33f rotM;
+			Matx31f rvec;
+			Matx33f rotT;
+			Rodrigues(rotM, rvec);//将旋转矩阵变换成旋转向量
+			solvePnP(point3d, points, cam_matrix, distortion_coeff, rvec, tvec);//PnP
+			Rodrigues(rvec, rotM);//将旋转向量变换成旋转矩阵
+			Rodrigues(tvec, rotT);//将平移向量变成平移矩阵
+			
+
+			double tx = tvec(0);
+			double ty = tvec(1);
+			double tz = tvec(2);
+			double dis = sqrt(tx * tx + ty * ty + tz * tz);//计算距离
+			putText(src, to_string(dis) + "cm " + to_string(tx) + " " + to_string(ty) + " " + to_string(tz), Point(50, 50), 1, 1, Scalar(0, 255, 100), 2);
+			cout << "distance:" << dis << "cm " << endl;
+			cout << "----------------" << endl;
+			cout << "偏移姿态(vector):" << endl << rvec << endl;
+			cout << "偏移姿态(matrix):" << endl << rotM << endl;
+			cout << "----------------" << endl;
 		}
-
-
-
-
-
 		//if (points.size() != 1)
 		//{
 		//	if (points.at(0).at(0).x > points.at(1).at(0).x)
@@ -277,18 +284,19 @@ int main()
 		//line(src, points_l.at(0), points_l.at(3), Scalar(0, 0, 255), 2);
 		//line(src, points_l.at(1), points_l.at(2), Scalar(0, 0, 255), 2);
 
-		size = object.size();
-		for (int i = 0; i < size; i++)
-		{
-			X += object.at(i).x;
-			Y += object.at(i).y;
-			Z += object.at(i).z;
-		}
-		X /= size;
-		Y /= size;
-		Z /= size;
-		DIS = sqrt(X * X + Y * Y + Z * Z);
-		putText(src, to_string(DIS) + "cm " + to_string(X) + " " + to_string(Y) + " " + to_string(Z), Point(50, 50), 1, 1, Scalar(0, 255, 100), 2);
+		//size = object.size();
+		//for (int i = 0; i < size; i++)
+		//{
+		//	X += object.at(i).x;
+		//	Y += object.at(i).y;
+		//	Z += object.at(i).z;
+		//}
+		//X /= size;
+		//Y /= size;
+		//Z /= size;
+		//DIS = sqrt(X * X + Y * Y + Z * Z);
+		//putText(src, to_string(DIS) + "cm " + to_string(X) + " " + to_string(Y) + " " + to_string(Z), Point(50, 50), 1, 1, Scalar(0, 255, 100), 2);
+		
 		//**预测**//
 		//if (object2d_point.empty())
 		//{
