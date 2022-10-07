@@ -5,6 +5,7 @@
 #include<opencv2/core.hpp>
 #include<vector>
 #include<algorithm>
+#include <math.h>
 using namespace std;
 using namespace cv;
 //初始化识别颜色
@@ -14,21 +15,31 @@ int lowV = 50;
 int highH = 120;
 int highS = 255;
 int highV = 255;
+Point2f two_centre[2];
+#define PI acos(-1);
+bool flag=false;
 
-void getTarget2dPoints(cv::RotatedRect object_rect, std::vector<Point2f>& object2d_point)
+float half_x = 4.21875;
+float half_y = 13.25;
+vector<Point3f> point3d;//三维坐标
+
+void getTarget2dPoints(cv::RotatedRect object_rect)
 {//获取像素坐标，顺时针，左上角为0号点
 	Point2f vertices[4];
 	object_rect.points(vertices);
 	Point2f lu, ld, ru, rd;
 	sort(begin(vertices), end(vertices), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x + p1.y < p2.x + p2.y; });
-
-	object2d_point.clear();
-	for (int i = 0; i < 4; i++)
-		object2d_point.push_back(vertices[i]);
 }
 int main()
 {
 	VideoCapture cap("../resources/test.mp4");
+
+	//**设置三维坐标**//
+	point3d.push_back(Point3f(-half_x, half_y, 0));
+	point3d.push_back(Point3f(half_x, half_y, 0));
+	point3d.push_back(Point3f(half_x, -half_y, 0));
+	point3d.push_back(Point3f(-half_x, -half_y, 0));
+
 	//调整识别的颜色//
 	namedWindow("control", WINDOW_NORMAL);
 	createTrackbar("lowH", "control", &lowH, 180);
@@ -46,28 +57,27 @@ int main()
 	{
 		//**检测**//
 		
-		frame_counter += 1;
-		cap.set(CAP_PROP_POS_FRAMES, frame_counter);//下一帧
-		//重放
-		if (frame_counter == count - 1)
-		{
-			frame_counter = 1;
-			cap.set(CAP_PROP_POS_FRAMES, 1);
-		}
-
-		cap >> src;
-		cap >> temp;
+		//frame_counter += 1;
+		//cap.set(CAP_PROP_POS_FRAMES, frame_counter);//下一帧
+		////重放
+		//if (frame_counter == count - 1)
+		//{
+		//	frame_counter = 1;
+		//	cap.set(CAP_PROP_POS_FRAMES, 1);
+		//}
+		cap.read(temp);
+		cap.read(src);
 
 
 		if (temp.empty())
 		{
 			break;
 		}
-		cvtColor(temp, temp, COLOR_BGR2HSV);//转为HSV图
+		cvtColor(src, temp, COLOR_BGR2HSV);//转为HSV图
 		
-		GaussianBlur(temp, temp, Size(7, 7), 0, 0);
+		GaussianBlur(temp, temp, Size(7, 7), 3, 0);
 		inRange(temp, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), temp);//二值化
-		//dilate(temp, temp, Mat());
+		/*dilate(temp, temp, Mat(),Point(-1,-1),1);*/
 		Mat kernel = getStructuringElement(MORPH_RECT, Size(3, 3));//expand line and just can use odd number
 		morphologyEx(temp, temp, MORPH_CLOSE, kernel);
 
@@ -113,12 +123,12 @@ int main()
 				{
 					line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 255), 1, 8);
 				}
-
+				two_centre[0] = rect.center;
 			}
 
 
 
-			if(hehierarchy[i][2]!=-1)
+			if (hehierarchy[i][2] != -1)
 				son = hehierarchy[i][2];
 			if(son!=-1)
 			{
@@ -151,6 +161,24 @@ int main()
 					{
 						line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 0), 1, 8);
 					}
+					two_centre[1] = rect.center;
+
+					/*测试数据*/
+					Matx33d cam_matrix = { 1.6041191539594568e+03,                       0, 6.3983687194220943e+02,
+										                        0,  1.6047833493341714e+03, 5.1222951297937527e+02,
+										                        0,                       0,                      1 };
+					Matx<double, 5, 1> distortion_coeff = { -6.4910709385278609e-01,  8.6914328787426987e-01,
+															 5.1733428362687644e-03, -4.1111054148847371e-03, 0};
+					/*测距*/
+					Matx31f tvec;
+					Matx31f rvec;
+					solvePnP(point3d, point, cam_matrix, distortion_coeff, rvec, tvec);//PnP
+					double tx = tvec(0);
+					double ty = tvec(1);
+					double tz = tvec(2);
+					double dis = sqrt(tx * tx + ty * ty + tz * tz);//计算距离
+					cout << "distance:" << dis << endl;
+					cout << "----------------" << endl;
 				}
 				
 			}
@@ -173,6 +201,13 @@ int main()
 			//}
 		//}
 
+		double angle = abs(atan((two_centre[1].y - two_centre[0].y) / (two_centre[1].x - two_centre[0].x)));
+		angle = angle * 180 / PI;
+		putText(src, "angle:" + to_string(angle), Point(50, 50), 1, 1, Scalar(0, 255, 100), 2);
+
+		
+
+		
 
 
 

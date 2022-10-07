@@ -8,7 +8,7 @@
 #include <math.h>
 using namespace std;
 using namespace cv;
-//³õÊ¼»¯Ê¶±ğÑÕÉ«
+//åˆå§‹åŒ–è¯†åˆ«é¢œè‰²
 int lowH = 70;
 int lowS = 50;
 int lowV = 50;
@@ -21,10 +21,10 @@ bool flag=false;
 
 float half_x = 4.21875;
 float half_y = 13.25;
-vector<Point3f> point3d;//ÈıÎ¬×ø±ê
+vector<Point3f> point3d;//ä¸‰ç»´åæ ‡
 
 void getTarget2dPoints(cv::RotatedRect object_rect)
-{//»ñÈ¡ÏñËØ×ø±ê£¬Ë³Ê±Õë£¬×óÉÏ½ÇÎª0ºÅµã
+{//è·å–åƒç´ åæ ‡ï¼Œé¡ºæ—¶é’ˆï¼Œå·¦ä¸Šè§’ä¸º0å·ç‚¹
 	Point2f vertices[4];
 	object_rect.points(vertices);
 	Point2f lu, ld, ru, rd;
@@ -34,13 +34,13 @@ int main()
 {
 	VideoCapture cap("../resources/test.mp4");
 
-	//**ÉèÖÃÈıÎ¬×ø±ê**//
+	//**è®¾ç½®ä¸‰ç»´åæ ‡**//
 	point3d.push_back(Point3f(-half_x, half_y, 0));
 	point3d.push_back(Point3f(half_x, half_y, 0));
 	point3d.push_back(Point3f(half_x, -half_y, 0));
 	point3d.push_back(Point3f(-half_x, -half_y, 0));
 
-	//µ÷ÕûÊ¶±ğµÄÑÕÉ«//
+	//è°ƒæ•´è¯†åˆ«çš„é¢œè‰²//
 	namedWindow("control", WINDOW_NORMAL);
 	createTrackbar("lowH", "control", &lowH, 180);
 	createTrackbar("lowS", "control", &lowS, 255);
@@ -50,16 +50,16 @@ int main()
 	createTrackbar("highV", "control", &highV, 255);
 	Mat src;
 	Mat temp;
-	int frame_counter = 1;//Ö¡¼ÆÊıÆ÷
+	int frame_counter = 1;//å¸§è®¡æ•°å™¨
 	int count = cap.get(CAP_PROP_FRAME_COUNT);
 	
 	while (1)
 	{
-		//**¼ì²â**//
+		//**æ£€æµ‹**//
 		
 		//frame_counter += 1;
-		//cap.set(CAP_PROP_POS_FRAMES, frame_counter);//ÏÂÒ»Ö¡
-		////ÖØ·Å
+		//cap.set(CAP_PROP_POS_FRAMES, frame_counter);//ä¸‹ä¸€å¸§
+		////é‡æ”¾
 		//if (frame_counter == count - 1)
 		//{
 		//	frame_counter = 1;
@@ -73,16 +73,16 @@ int main()
 		{
 			break;
 		}
-		cvtColor(src, temp, COLOR_BGR2HSV);//×ªÎªHSVÍ¼
+		cvtColor(src, temp, COLOR_BGR2HSV);//è½¬ä¸ºHSVå›¾
 		
 		GaussianBlur(temp, temp, Size(7, 7), 3, 0);
-		inRange(temp, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), temp);//¶şÖµ»¯
+		inRange(temp, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), temp);//äºŒå€¼åŒ–
 		/*dilate(temp, temp, Mat(),Point(-1,-1),1);*/
 		Mat kernel = getStructuringElement(MORPH_RECT, Size(3, 3));//expand line and just can use odd number
 		morphologyEx(temp, temp, MORPH_CLOSE, kernel);
 
 
-		//ÕÒÂÖÀª
+		//æ‰¾è½®å»“
 		vector<vector<Point>> contours;
 		vector<Vec4i> hehierarchy;
 		//Canny(temp, temp, 100, 200, 3);
@@ -91,7 +91,7 @@ int main()
 		
 		int son=-1;
 		int centre=-1;
-		//¾ØĞÎ±êÂÖÀª
+		//çŸ©å½¢æ ‡è½®å»“
 		for (int i = 0; i < contours.size(); i++)
 		{
 			if (hehierarchy[i][2] == -1 && hehierarchy[i][3] == -1)
@@ -109,7 +109,7 @@ int main()
 				{
 					continue;
 				}
-				//¾ØĞÎ³¤¿í±È
+				//çŸ©å½¢é•¿å®½æ¯”
 				float h = rect.size.height;
 				float w = rect.size.width;
 				float radio = (h > w) ? h / w : w / h;
@@ -118,8 +118,8 @@ int main()
 					continue;
 				}
 				vector<Point2f> point(4);
-				rect.points(point.data());//·µ»ØrectÖĞµÄËÄ¸ö¶¥µãµ½<Point2f>Êı×éÖĞ.
-				for (int k = 0; k < 4; k++)//»­¾ØĞÎ
+				rect.points(point.data());//è¿”å›rectä¸­çš„å››ä¸ªé¡¶ç‚¹åˆ°<Point2f>æ•°ç»„ä¸­.
+				for (int k = 0; k < 4; k++)//ç”»çŸ©å½¢
 				{
 					line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 255), 1, 8);
 				}
@@ -147,7 +147,7 @@ int main()
 					{
 						continue;
 					}
-					//¾ØĞÎ³¤¿í±È
+					//çŸ©å½¢é•¿å®½æ¯”
 					float h = rect.size.height;
 					float w = rect.size.width;
 					float radio = (h > w) ? h / w : w / h;
@@ -156,27 +156,27 @@ int main()
 						continue;
 					}
 					vector<Point2f> point(4);
-					rect.points(point.data());//·µ»ØrectÖĞµÄËÄ¸ö¶¥µãµ½<Point2f>Êı×éÖĞ.
-					for (int k = 0; k < 4; k++)//»­¾ØĞÎ
+					rect.points(point.data());//è¿”å›rectä¸­çš„å››ä¸ªé¡¶ç‚¹åˆ°<Point2f>æ•°ç»„ä¸­.
+					for (int k = 0; k < 4; k++)//ç”»çŸ©å½¢
 					{
 						line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 0), 1, 8);
 					}
 					two_centre[1] = rect.center;
 
-					/*²âÊÔÊı¾İ*/
+					/*æµ‹è¯•æ•°æ®*/
 					Matx33d cam_matrix = { 1.6041191539594568e+03,                       0, 6.3983687194220943e+02,
 										                        0,  1.6047833493341714e+03, 5.1222951297937527e+02,
 										                        0,                       0,                      1 };
 					Matx<double, 5, 1> distortion_coeff = { -6.4910709385278609e-01,  8.6914328787426987e-01,
 															 5.1733428362687644e-03, -4.1111054148847371e-03, 0};
-					/*²â¾à*/
+					/*æµ‹è·*/
 					Matx31f tvec;
 					Matx31f rvec;
 					solvePnP(point3d, point, cam_matrix, distortion_coeff, rvec, tvec);//PnP
 					double tx = tvec(0);
 					double ty = tvec(1);
 					double tz = tvec(2);
-					double dis = sqrt(tx * tx + ty * ty + tz * tz);//¼ÆËã¾àÀë
+					double dis = sqrt(tx * tx + ty * ty + tz * tz);//è®¡ç®—è·ç¦»
 					cout << "distance:" << dis << endl;
 					cout << "----------------" << endl;
 				}
@@ -194,8 +194,8 @@ int main()
 			//	continue;
 			//}
 			//vector<Point2f> point(4);
-			//rect.points(point.data());//·µ»ØrectÖĞµÄËÄ¸ö¶¥µãµ½<Point2f>Êı×éÖĞ.
-			//for (int k = 0; k < 4; k++)//»­¾ØĞÎ
+			//rect.points(point.data());//è¿”å›rectä¸­çš„å››ä¸ªé¡¶ç‚¹åˆ°<Point2f>æ•°ç»„ä¸­.
+			//for (int k = 0; k < 4; k++)//ç”»çŸ©å½¢
 			//{
 			//	line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 255), 1, 8);
 			//}
@@ -218,7 +218,7 @@ int main()
 		imshow("test", temp);
 		imshow("src", src);
 
-		//escÍË³ö
+		//escé€€å‡º
 		if (waitKey(1000 / cap.get(CAP_PROP_FPS)) == 27)
 		{
 			break;
