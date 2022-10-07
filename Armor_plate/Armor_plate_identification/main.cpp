@@ -41,7 +41,8 @@ void getTarget2dPoints(cv::RotatedRect object_rect, std::vector<Point2f>& object
 }
 int main()
 {
-	VideoCapture cap("D:\\Git\\public_task\\Armor_plate\\resources\\test.mp4");
+	VideoCapture cap("../resources/test.mp4");
+
 	//**ÉèÖÃÈıÎ¬×ø±ê**//
 	point3d.push_back(Point3f(-half_x, half_y, 0));
 	point3d.push_back(Point3f(half_x, half_y, 0));
