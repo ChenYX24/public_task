@@ -15,8 +15,8 @@ int exposure = 0;//曝光
 vector<Point3f> point3d;//三维坐标
 vector<Point2f> object2d_point;//二维坐标
 vector<vector<Point2f>> last_point;//上次的二维坐标
-float half_x = 4.21875;
-float half_y = 13.25;
+float x = 230;
+float y = 127;
 int num = 0;//计数器
 //初始化识别颜色
 int lowH = 0;
@@ -41,12 +41,12 @@ void getTarget2dPoints(cv::RotatedRect object_rect, std::vector<Point2f>& object
 }
 int main()
 {
-	VideoCapture cap("../resources/test.mp4");
+	VideoCapture cap("../resources/test.avi");
 	//**设置三维坐标**//
-	point3d.push_back(Point3f(-half_x, half_y, 0));
-	point3d.push_back(Point3f(half_x, half_y, 0));
-	point3d.push_back(Point3f(half_x, -half_y, 0));
-	point3d.push_back(Point3f(-half_x, -half_y, 0));
+	point3d.push_back(Point3f(0, 0, 0));
+	point3d.push_back(Point3f(x, 0, 0));
+	point3d.push_back(Point3f(x, y, 0));
+	point3d.push_back(Point3f(0, y, 0));
 
 	//调整摄像机参数//
 	//namedWindow("camera",(640,200));
@@ -174,7 +174,6 @@ int main()
 			{
 				line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 0), 1, 8);
 			}
-			getTarget2dPoints(rect, object2d_point);//返回二维像素坐标
 			getTarget2dPoints(rect, point);//返回二维像素坐标
 			Point2f temp_p;
 			Point2f temp_p2;
@@ -184,13 +183,6 @@ int main()
 			temp_p2.y = (point.at(2).y + point.at(3).y) / 2;
 			points.push_back(temp_p);
 			points.push_back(temp_p2);
-
-
-			//**测距**//
-			/*float Distance = Width / rect.size.width * focal *2.54;
-			putText(src, to_string(Distance), point.at(1), 3, 1.2, Scalar(0, 0, 255));*/
-			//Mat cam_matrix = (Mat_<double>(3, 3) << 1211.0, -0.9, 342.2, 0, 1211.0, 241.5, 0, 0, 1);//内参矩阵
-			//Mat distortion_coeff = (Mat_<double>(4, 1) << -0.0872, 1.0592, -0.0033, 0.0010);//畸变矩阵
 
 
 
@@ -212,6 +204,8 @@ int main()
 			for (int i = 0; i < points.size(); i++)
 			{
 				circle(src, points.at(i), 3, Scalar(0, 255, 120), -1);//画点
+			putText(src, to_string(i),Point(points.at(i).x,points.at(i).y), 1, 1, Scalar(0, 255, 100), 2);
+
 			}
 			
 			line(src, points.at(0), points.at(2), Scalar(0, 0, 255), 2);
@@ -248,93 +242,17 @@ int main()
 			cout << "偏移姿态(matrix):" << endl << rotM << endl;
 			cout << "----------------" << endl;
 		}
-		//if (points.size() != 1)
-		//{
-		//	if (points.at(0).at(0).x > points.at(1).at(0).x)
-		//		swap(points.at(0), points.at(1));
-		//	sort(points.at(0).begin(), points.at(0).end(), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x < p2.x; });
-		//	sort(points.at(1).begin(), points.at(1).end(), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x < p2.x; });
 
-		//	circle(src, points.at(0).at(1), 3, Scalar(0, 255, 120), -1);//画点
-		//	points_l.at(0) = points.at(0).at(1);
-		//	if (pow((points.at(0).at(0).x - points.at(0).at(1).x), 2) + pow((points.at(0).at(0).y - points.at(0).at(1).y), 2) < pow((points.at(0).at(0).x - points.at(0).at(2).x), 2) + pow((points.at(0).at(0).y - points.at(0).at(2).y), 2))
-		//	{
-		//		circle(src, points.at(0).at(2), 3, Scalar(0, 255, 120), -1);//画点
-		//		points_l.at(1) = points.at(0).at(2);
-		//	}
-		//	else
-		//	{
-		//		circle(src, points.at(0).at(0), 3, Scalar(0, 255, 120), -1);//画点
-		//		points_l.at(1) = points.at(0).at(0);
-		//	}
-		//	circle(src, points.at(1).at(2), 3, Scalar(0, 255, 120), -1);//画点
-		//	points_l.at(3) = points.at(1).at(2);
-		//	if (pow((points.at(1).at(2).x - points.at(1).at(3).x), 2) + pow((points.at(1).at(2).y - points.at(1).at(3).y), 2) < pow((points.at(1).at(0).x - points.at(1).at(2).x), 2) + pow((points.at(1).at(0).y - points.at(1).at(2).y), 2))
-		//	{
-		//		circle(src, points.at(1).at(0), 3, Scalar(0, 255, 120), -1);//画点
-		//		points_l.at(2) = points.at(1).at(0);
-		//	}
-		//	else
-		//	{
-		//		circle(src, points.at(1).at(3), 3, Scalar(0, 255, 120), -1);//画点
-		//		points_l.at(2) = points.at(1).at(3);
-		//	}
-
-		//}
-		//line(src, points_l.at(0), points_l.at(3), Scalar(0, 0, 255), 2);
-		//line(src, points_l.at(1), points_l.at(2), Scalar(0, 0, 255), 2);
-
-		//size = object.size();
-		//for (int i = 0; i < size; i++)
-		//{
-		//	X += object.at(i).x;
-		//	Y += object.at(i).y;
-		//	Z += object.at(i).z;
-		//}
-		//X /= size;
-		//Y /= size;
-		//Z /= size;
-		//DIS = sqrt(X * X + Y * Y + Z * Z);
-		//putText(src, to_string(DIS) + "cm " + to_string(X) + " " + to_string(Y) + " " + to_string(Z), Point(50, 50), 1, 1, Scalar(0, 255, 100), 2);
-		
-		//**预测**//
-		//if (object2d_point.empty())
-		//{
-		//	imshow("src", src);
-		//	imshow("test", temp);
-		//	if (waitKey(1000 / cap.get(CAP_PROP_FPS)) == 27)
-		//	{
-		//		break;
-		//	}
-		//	continue;
-		//}
-		//if (last_point.size() < 6)
-		//{
-		//	last_point.push_back(object2d_point);
-		//	continue;
-		//}
-		//if (num == 5)
-		//	num = 0;
-		////取点
-		//Point2f lu(object2d_point.at(0).x - last_point.at(num).at(0).x + object2d_point.at(0).x, (object2d_point.at(0).y - last_point.at(num).at(0).y) + object2d_point.at(0).y);
-		//Point2f ru(object2d_point.at(1).x - last_point.at(num).at(1).x + object2d_point.at(1).x, (object2d_point.at(1).y - last_point.at(num).at(1).y) + object2d_point.at(1).y);
-		//Point2f rd(object2d_point.at(2).x - last_point.at(num).at(2).x + object2d_point.at(2).x, (object2d_point.at(2).y - last_point.at(num).at(2).y) + object2d_point.at(2).y);
-		//Point2f ld(object2d_point.at(3).x - last_point.at(num).at(3).x + object2d_point.at(3).x, (object2d_point.at(3).y - last_point.at(num).at(3).y) + object2d_point.at(3).y);
-		////画矩形
-		//line(src, lu, ru, Scalar(0, 0, 255), 1, 8);
-		//line(src, ru, rd, Scalar(0, 0, 255), 1, 8);
-		//line(src, rd, ld, Scalar(0, 0, 255), 1, 8);
-		//line(src, ld, lu, Scalar(0, 0, 255), 1, 8);
-		//last_point.at(num).assign(object2d_point.begin(), object2d_point.end());
-		//object2d_point.clear();
-		//num++;
-
-		imshow("src", src);
 		imshow("test", temp);
-		//esc退出
-		if (waitKey(1000 / cap.get(CAP_PROP_FPS)) == 27)
-		{
+		imshow("src", src);
+    
+		int k = waitKey(30);
+		if (k == 27)
 			break;
+		else if (k == 32)
+		{
+			while (waitKey(0) != 32)
+				waitKey(0);
 		}
 	}
 	return 0;

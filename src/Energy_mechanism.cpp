@@ -19,8 +19,8 @@ Point2f two_centre[2];
 #define PI acos(-1);
 bool flag=false;
 
-float half_x = 4.21875;
-float half_y = 13.25;
+float x = 230;
+float y = 127;
 vector<Point3f> point3d;//三维坐标
 
 void getTarget2dPoints(cv::RotatedRect object_rect)
@@ -32,13 +32,13 @@ void getTarget2dPoints(cv::RotatedRect object_rect)
 }
 int main()
 {
-	VideoCapture cap("../resources/test2.mp4");
+	VideoCapture cap("../resources/test2.avi");
 
 	//**设置三维坐标**//
-	point3d.push_back(Point3f(-half_x, half_y, 0));
-	point3d.push_back(Point3f(half_x, half_y, 0));
-	point3d.push_back(Point3f(half_x, -half_y, 0));
-	point3d.push_back(Point3f(-half_x, -half_y, 0));
+	point3d.push_back(Point3f(0, 0, 0));
+	point3d.push_back(Point3f(x, 0, 0));
+	point3d.push_back(Point3f(x, y, 0));
+	point3d.push_back(Point3f(0, y, 0));
 
 	//调整识别的颜色//
 	namedWindow("control", WINDOW_NORMAL);
@@ -159,7 +159,7 @@ int main()
 					rect.points(point.data());//返回rect中的四个顶点到<Point2f>数组中.
 					for (int k = 0; k < 4; k++)//画矩形
 					{
-						line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 0), 1, 8);
+						line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 0, 255), 1, 8);
 					}
 					two_centre[1] = rect.center;
 
@@ -218,12 +218,18 @@ int main()
 		imshow("test", temp);
 		imshow("src", src);
 
-		//esc退出
-		if (waitKey(1000 / cap.get(CAP_PROP_FPS)) == 27)
-		{
+    int k = waitKey(30);
+		if (k == 27)
 			break;
+		else if (k == 32)
+		{
+			while (waitKey(0) != 32)
+				waitKey(0);
 		}
+    
+    
 
+     
 	}
 	return 0;
 

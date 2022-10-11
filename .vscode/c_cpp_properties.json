@@ -1,17 +1,18 @@
 {
   "configurations": [
       {
-          "name": "win",
+          "name": "Linux",
           "includePath": [
               "${workspaceFolder}/**",
-              "D:/opencv/build/include",
-              "D:/opencv/build/include/opencv2"
+              "/usr/include/x86_64-linux-gnu/sys",
+              "/usr/local/include/opencv4",			//记得把opencv4的include路径包含，按我上述方法来安装opencv的话一般就是这个路径
+              "/usr/include/x86_64-linux-gnu/sys"		//这是装了cuda的路径，如果无cuda请去除
           ],
           "defines": [],
-          "compilerPath": "E:mingw64/bin/g++.exe",
-          "cStandard": "c11",
-          "cppStandard": "c++17",
-          "intelliSenseMode": "${default}"
+          "compilerPath": "/usr/bin/gcc",
+          "cStandard": "gnu17",
+          "cppStandard": "gnu++17",
+          "intelliSenseMode": "linux-gcc-x64"
       }
   ],
   "version": 4
