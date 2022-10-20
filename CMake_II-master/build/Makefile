@@ -78,6 +78,17 @@ edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+
+.PHONY : test/fast
+
 # The main all target
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/cyx/CMake_II-master/build/CMakeFiles /home/cyx/CMake_II-master/build/CMakeFiles/progress.marks
@@ -109,6 +120,19 @@ preinstall/fast:
 depend:
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
+
+#=============================================================================
+# Target rules for targets named assembly1_test
+
+# Build rule for target.
+assembly1_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 assembly1_test
+.PHONY : assembly1_test
+
+# fast build rule for target.
+assembly1_test/fast:
+	$(MAKE) -f CMakeFiles/assembly1_test.dir/build.make CMakeFiles/assembly1_test.dir/build
+.PHONY : assembly1_test/fast
 
 #=============================================================================
 # Target rules for targets named client
@@ -189,6 +213,33 @@ client.cpp.s:
 	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/client.cpp.s
 .PHONY : client.cpp.s
 
+modules/assembly1/test/assembly1_test.o: modules/assembly1/test/assembly1_test.cpp.o
+
+.PHONY : modules/assembly1/test/assembly1_test.o
+
+# target to build an object file
+modules/assembly1/test/assembly1_test.cpp.o:
+	$(MAKE) -f CMakeFiles/assembly1_test.dir/build.make CMakeFiles/assembly1_test.dir/modules/assembly1/test/assembly1_test.cpp.o
+.PHONY : modules/assembly1/test/assembly1_test.cpp.o
+
+modules/assembly1/test/assembly1_test.i: modules/assembly1/test/assembly1_test.cpp.i
+
+.PHONY : modules/assembly1/test/assembly1_test.i
+
+# target to preprocess a source file
+modules/assembly1/test/assembly1_test.cpp.i:
+	$(MAKE) -f CMakeFiles/assembly1_test.dir/build.make CMakeFiles/assembly1_test.dir/modules/assembly1/test/assembly1_test.cpp.i
+.PHONY : modules/assembly1/test/assembly1_test.cpp.i
+
+modules/assembly1/test/assembly1_test.s: modules/assembly1/test/assembly1_test.cpp.s
+
+.PHONY : modules/assembly1/test/assembly1_test.s
+
+# target to generate assembly for a file
+modules/assembly1/test/assembly1_test.cpp.s:
+	$(MAKE) -f CMakeFiles/assembly1_test.dir/build.make CMakeFiles/assembly1_test.dir/modules/assembly1/test/assembly1_test.cpp.s
+.PHONY : modules/assembly1/test/assembly1_test.cpp.s
+
 server.o: server.cpp.o
 
 .PHONY : server.o
@@ -224,6 +275,8 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... test"
+	@echo "... assembly1_test"
 	@echo "... client"
 	@echo "... server"
 	@echo "... MODULES"
@@ -231,6 +284,9 @@ help:
 	@echo "... client.o"
 	@echo "... client.i"
 	@echo "... client.s"
+	@echo "... modules/assembly1/test/assembly1_test.o"
+	@echo "... modules/assembly1/test/assembly1_test.i"
+	@echo "... modules/assembly1/test/assembly1_test.s"
 	@echo "... server.o"
 	@echo "... server.i"
 	@echo "... server.s"

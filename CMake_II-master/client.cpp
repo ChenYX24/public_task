@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 {
     Client client;
     if (!client.connect("opc.tcp://localhost:4840"))
-        return 0;
+      return 0;
 
     Variable dis = client.readVaiable("distance");
     float result = *reinterpret_cast<float *>(dis.getVariant().data);

@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_FLAGS = -fPIC  
 
-CXX_DEFINES = 
+CXX_DEFINES = -DWITH_B
 
 CXX_INCLUDES = -I/home/cyx/CMake_II-master/modules/./assembly1/include -I/home/cyx/CMake_II-master/modules/./assembly2/include -I/home/cyx/CMake_II-master/modules/./module1/include -I/home/cyx/CMake_II-master/modules/./module1/include/robotlab/module1 -I/home/cyx/CMake_II-master/modules/./module2/include -I/home/cyx/CMake_II-master/modules/./module2/include/robotlab/opcua_cs -I/home/cyx/CMake_II-master/modules/./module2/include/robotlab/opcua_cs/ua_type -I/home/cyx/CMake_II-master/common/./singleton/include -I/home/cyx/CMake_II-master/common/./rmath/include -isystem /usr/local/include/opencv4 
 
