@@ -1,0 +1,10 @@
+/home/cyx/CMake_II-master/build/CMakeFiles/rebuild_cache.dir
+/home/cyx/CMake_II-master/build/CMakeFiles/edit_cache.dir
+/home/cyx/CMake_II-master/build/CMakeFiles/client.dir
+/home/cyx/CMake_II-master/build/CMakeFiles/server.dir
+/home/cyx/CMake_II-master/build/modules/CMakeFiles/rebuild_cache.dir
+/home/cyx/CMake_II-master/build/modules/CMakeFiles/edit_cache.dir
+/home/cyx/CMake_II-master/build/modules/CMakeFiles/MODULES.dir
+/home/cyx/CMake_II-master/build/common/CMakeFiles/rebuild_cache.dir
+/home/cyx/CMake_II-master/build/common/CMakeFiles/edit_cache.dir
+/home/cyx/CMake_II-master/build/common/CMakeFiles/COMMON.dir
