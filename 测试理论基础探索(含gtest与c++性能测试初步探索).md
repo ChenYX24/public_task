@@ -347,6 +347,79 @@
 
 （待肝）
 
+
+
+
+
+## c++性能测试
+
+除了上面的性能测试基础外，针对c++性能测试的学习，主要初步了解了两个测试工具的使用
+
+### 一、测试工具
+
+1. gprof
+
+   GNU profile,是GNU编译器工具包的一种性能分析工具，它能够准备的对函数调用的时间、次数以及相应关系进行描述和说明，还可以通过使用gprof2dot这个工具把结果直接展示为图形状态。它可以分为以下几步进行使用：
+   1、在编译测试程序时打开编译开关 -pg
+   2、运行程序并正常运行完成
+   3、使用gprof命令来分析运行生成的gmon.out，生成性能测试结果的报告
+
+```cpp
+//testgprof.cpp
+#include<iostream>
+
+int main(void)
+{
+    std::cout << "start test------!" << std::endl;
+
+    int64_t d = 0;
+
+    for (int i = 0; i < 1000000000; i++)
+    {
+        d += i;
+    }
+    std::cout << "result is:" << d << std::endl;
+
+    std::cout << "end test!" << std::endl;
+
+    return 0;
+}
+
+//编译
+g++  -pg testgprof.cpp  -o tgprof
+//运行这个命令后可以在屏幕上看到相关的分析
+gprof tgprof gmon.out
+
+
+```
+
+2. gperftool
+
+   gperftools包括四个工具，即CPU profiler （CPU运行时间探测分析）、Heap Checker（内存检测） 、Heap Profiler（内存监控器） 及tcmalloc（内存管理库）。对CPU和内存泄露的检测一直是C\C++的一个痛点，Google提供这再从个方面的工具真是太及时了。
+   这个软件需要安装下载，同样在编译时也要链接到相关的库，会在后面的文章中专门分析说明。需要说明的是在这个工具中提供了对不间断运行的应用程序（比如后台服务）的测试，可以通过信号指令来启动或者关闭相关的测试过程，如"kill -s SIGUSR1 进程ID".
+
+```cpp
+void TestLeakMem()
+{
+    int* p = new int[100];
+    char* tmp = new char[100];
+
+    delete[] p;
+    //delete [] tmp;
+}
+int main(void)
+{
+    TestLeakMem();
+    return 0;
+}
+
+//编译
+g++ -O0 -g testmem.cpp -ltcmalloc -o testmem
+
+```
+
+参考：https://blog.csdn.net/fpcc/article/details/122391598?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522166704846416782429730266%2522%252C%2522scm%2522%253A%252220140713.130102334.pc%255Fall.%2522%257D&request_id=166704846416782429730266&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~first_rank_ecpm_v1~rank_v31_ecpm-2-122391598-null-null.142^v62^control,201^v3^add_ask,213^v1^control&utm_term=c%2B%2B%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95&spm=1018.2226.3001.4187
+
 ## GoogleTest单元测试框架
 
 ### 一、下载与安装
@@ -647,3 +720,157 @@ gtest提供了多种事件机制，非常方便我们在案例之前或之后做
 TestCase事件是挂在每个案例执行前后的，实现方式和上面的几乎一样，不过需要实现的是SetUp方法和TearDown方法：
 1. SetUp()方法在每个TestCase之前执行
 2. TearDown()方法在每个TestCase之后执行
+
+### 九、参数化
+
+告诉gtest你的参数类型是什么
+
+你必须添加一个类，继承`testing::TestWithParam<T>`，其中T就是你需要参数化的参数类型
+
+告诉gtest你拿到参数的值后，具体做些什么样的测试
+
+TEST_P，"P"可以理解为”parameterized" 或者 "pattern"。在TEST_P宏里，使用GetParam()获取当前的参数的具体值。
+
+告诉gtest你想要测试的参数范围是什么
+
+使用INSTANTIATE_TEST_CASE_P这宏来告诉gtest你要测试的参数范围：
+
+```cpp
+INSTANTIATE_TEST_CASE_P(TrueReturn, IsPrimeParamTest, testing::Values(3, 5, 11, 23, 17));
+```
+
+第一个参数是测试案例的前缀，可以任意取。
+
+第二个参数是测试案例的名称，需要和之前定义的参数化的类的名称相同，如：IsPrimeParamTest
+
+第三个参数是可以理解为参数生成器，上面的例子使用test::Values表示使用括号内的参数。
+
+Google提供了一系列的参数生成的函数：
+
+| `Range(begin, end[, step])`                      | 范围在begin~end之间，步长为step，不包括end                   |
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| `Values(v1, v2, ..., vN)`                        | v1,v2到vN的值                                                |
+| `ValuesIn(container)` and `ValuesIn(begin, end)` | 从一个C类型的数组或是STL容器，或是迭代器中取值               |
+| `Bool()`                                         | 取`false 和 true 两个值`                                     |
+| `Combine(g1, g2, ..., gN)`                       | 这个比较强悍，它将g1,g2,...gN进行排列组合，g1,g2,...gN本身是一个参数生成器，每次分别从g1,g2,..gN中各取出一个值，组合成一个元组(Tuple)作为一个参数。说明：这个功能只在提供了`<tr1/tuple>头的系统中有效。gtest会自动去判断是否支持tr/tuple，如果你的系统确实支持，而`gtest判断错误的话，你可以重新定义宏`GTEST_HAS_TR1_TUPLE=1`。 |
+
+此外还可以类型参数化
+
+### 十、死亡测试
+
+**10-1.使用的宏** 
+
+| **Fatal assertion**                            | **Nonfatal assertion**                         | **Verifies**                                                 |
+| ---------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ |
+| `ASSERT_DEATH(`*statement, regex*`);           | `EXPECT_DEATH(`*statement, regex*`);           | *statement* crashes with the given error                     |
+| `ASSERT_EXIT(`*statement, predicate, regex*`); | `EXPECT_EXIT(`*statement, predicate, regex*`); | *statement* exits with the given error and its exit code matches *predicate* |
+
+由于有些异常只在Debug下抛出，因此还提供了*_DEBUG_DEATH，用来处理Debug和Realease下的不同。
+
+ **10-2.*_DEATH(statement, regex`)** 
+
+1. statement是被测试的代码语句
+
+2. regex是一个正则表达式，用来匹配异常时在stderr中输出的内容
+
+3. **编写死亡测试案例时，TEST的第一个参数，即testcase_name，请使用DeathTest后缀。原因是gtest会优先运行死亡测试案例，应该是为线程安全考虑。**
+
+**10-3.**_`EXIT(`*statement, predicate, regex`)**
+
+1. statement是被测试的代码语句
+
+2. predicate 在这里必须是一个委托，接收int型参数，并返回bool。只有当返回值为true时，死亡测试案例才算通过。gtest提供了一些常用的predicate：
+
+```c++
+testing::ExitedWithCode(exit_code)
+//如果程序正常退出并且退出码与exit_code相同则返回 `true`
+testing::KilledBySignal(signal_number) // Windows下不支持
+//如果程序被signal_number信号kill的话就返回true
+```
+
+3. regex是一个正则表达式(**POSIX风格**)，用来匹配异常时在stderr中输出的内容
+
+\*\_DEATH其实是对\*\_EXIT进行的一次包装，*_DEATH的predicate判断进程是否以非0退出码退出或被一个信号杀死。
+
+**10-4.*_DEBUG_DEATH**
+
+```cpp
+int DieInDebugElse12(int* sideeffect) {
+    if (sideeffect) *sideeffect = 12;
+#ifndef NDEBUG
+    GTEST_LOG_(FATAL, "debug death inside DieInDebugElse12()");
+#endif  // NDEBUG
+    return 12;
+}
+TEST(TestCase, TestDieOr12WorksInDgbAndOpt)
+{
+    int sideeffect = 0;
+    // Only asserts in dbg.
+    EXPECT_DEBUG_DEATH(DieInDebugElse12(&sideeffect), "death");
+
+    #ifdef NDEBUG
+    // opt-mode has sideeffect visible.
+    EXPECT_EQ(12, sideeffect);
+    #else
+    // dbg-mode no visible sideeffect.
+    EXPECT_EQ(0, sideeffect);
+    #endif
+}
+```
+
+**死亡测试运行方式**
+
+1. fast方式（默认的方式）
+
+testing::FLAGS_gtest_death_test_style = "fast";
+
+2. threadsafe方式
+
+testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+**注意事项**
+
+1. 不要在死亡测试里释放内存。
+
+2. 在父进程里再次释放内存。
+
+3. 不要在程序中使用内存堆检查。
+
+### 十一、运行参数
+
+最后再来说下第一种设置方式-系统环境变量。如果需要gtest的设置系统环境变量，必须注意的是：
+
+1. 系统环境变量全大写，比如对于--gtest_output，响应的系统环境变量为：GTEST_OUTPUT
+
+2. 有一个命令行参数例外，那就是--gtest_list_tests，它是不接受系统环境变量的。（只是用来罗列测试案例名称）
+
+参数列表： 
+
+了解了上面的内容，我这里就直接将所有命令行参数总结和罗列一下。如果想要获得详细的命令行说明，直接运行你的案例，输入命令行参数：/? 或 --help 或 -help
+
+1. 测试案例集合
+
+| **命令行参数**                  | **说明**                                                     |
+| ------------------------------- | ------------------------------------------------------------ |
+| --gtest_list_tests              | 使用这个参数时，将不会执行里面的测试案例，而是输出一个案例的列表。 |
+| --gtest_filter                  | 对执行的测试案例进行过滤，支持通配符?  单个字符*  任意字符-   排除，如，-a 表示除了a :  取或，如，a:b 表示a或b 比如下面的例子：./foo_test 没有指定过滤条件，运行所有案例 ./foo_test --gtest_filter=* 使用通配符*，表示运行所有案例 ./foo_test --gtest_filter=FooTest.* 运行所有“测试案例名称(testcase_name)”为FooTest的案例 ./foo_test --gtest_filter=*Null*:*Constructor* 运行所有“测试案例名称(testcase_name)”或“测试名称(test_name)”包含Null或Constructor的案例。 ./foo_test --gtest_filter=-*DeathTest.* 运行所有非死亡测试案例。 ./foo_test --gtest_filter=FooTest.*-FooTest.Bar 运行所有“测试案例名称(testcase_name)”为FooTest的案例，但是除了FooTest.Bar这个案例 |
+| --gtest_also_run_disabled_tests | 执行案例时，同时也执行被置为无效的测试案例。关于设置测试案例无效的方法为：在测试案例名称或测试名称中添加DISABLED前缀，比如：[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)// Tests that Foo does Abc. TEST(FooTest, DISABLED_DoesAbc) { ![img](https://www.cnblogs.com/Images/dot.gif) }  class DISABLED_BarTest : public testing::Test { ![img](https://www.cnblogs.com/Images/dot.gif) };  // Tests that Bar does Xyz. TEST_F(DISABLED_BarTest, DoesXyz) { ![img](https://www.cnblogs.com/Images/dot.gif) }[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);) |
+| --gtest_repeat=[COUNT]          | 设置案例重复运行次数，非常棒的功能！比如：--gtest_repeat=1000    重复执行1000次，即使中途出现错误。 --gtest_repeat=-1      无限次数执行。。。。 --gtest_repeat=1000 --gtest_break_on_failure   重复执行1000次，并且在第一个错误发生时立即停止。这个功能对调试非常有用。 --gtest_repeat=1000 --gtest_filter=FooBar   重复执行1000次测试案例名称为FooBar的案例。 |
+
+2. 测试案例输出
+
+| **命令行参数**                                  | **说明**                                                     |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| --gtest_color=(yes\|no\|auto)                   | 输出命令行时是否使用一些五颜六色的颜色。默认是auto。         |
+| --gtest_print_time                              | 输出命令行时是否打印每个测试案例的执行时间。默认是不打印的。 |
+| --gtest_output=xml[:DIRECTORY_PATH\|:FILE_PATH] | 将测试结果输出到一个xml中。1.--gtest_output=xml:   不指定输出路径时，默认为案例当前路径。 2.--gtest_output=xml:d:\ 指定输出到某个目录 3.--gtest_output=xml:d:\foo.xml 指定输出到d:\foo.xml 如果不是指定了特定的文件路径，gtest每次输出的报告不会覆盖，而会以数字后缀的方式创建。xml的输出内容后面介绍吧。 |
+
+3. 对案例的异常处理
+
+| **命令行参数**           | **说明**                                                     |
+| ------------------------ | ------------------------------------------------------------ |
+| --gtest_break_on_failure | 调试模式下，当案例失败时停止，方便调试                       |
+| --gtest_throw_on_failure | 当案例失败时以C++异常的方式抛出                              |
+| --gtest_catch_exceptions | 是否捕捉异常。gtest默认是不捕捉异常的，因此假如你的测试案例抛了一个异常，很可能会弹出一个对话框，这非常的不友好，同时也阻碍了测试案例的运行。如果想不弹这个框，可以通过设置这个参数来实现。如将--gtest_catch_exceptions设置为一个非零的数。注意：这个参数只在Windows下有效。 |
+
+一些参考https://www.cnblogs.com/coderzh/archive/2009/04/06/1426755.html
