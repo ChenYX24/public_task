@@ -1,4 +1,0 @@
-﻿  main.cpp
-D:\Git\public_task\Energy_mechanism\Energy_mechanism\main.cpp(54,12): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
-D:\Git\public_task\Energy_mechanism\Energy_mechanism\main.cpp(222,20): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
-  Energy_mechanism.vcxproj -> D:\Git\public_task\Energy_mechanism\Energy_mechanism\x64\Debug\Energy_mechanism.exe
