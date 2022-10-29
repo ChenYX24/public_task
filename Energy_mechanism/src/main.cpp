@@ -32,7 +32,7 @@ void getTarget2dPoints(cv::RotatedRect object_rect)
 }
 int main()
 {
-	VideoCapture cap("../resources/test2.mp4");
+	VideoCapture cap("../resources/test.mp4");
 
 	//**设置三维坐标**//
 	point3d.push_back(Point3f(-half_x, half_y, 0));
