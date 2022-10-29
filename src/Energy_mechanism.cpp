@@ -16,12 +16,16 @@ int highH = 120;
 int highS = 255;
 int highV = 255;
 Point2f two_centre[2];
-#define PI acos(-1);
+#define PI acos(-1)
 bool flag=false;
 
-float half_x = 4.21875;
-float half_y = 13.25;
+float x = 23.0;
+float y = 12.7;
 vector<Point3f> point3d;//三维坐标
+
+// float t_line=822.91;//边长
+// float t_line_x=t_line*640/25.4;
+// float t_line_y=t_line*480/25.4;
 
 void getTarget2dPoints(cv::RotatedRect object_rect)
 {//获取像素坐标，顺时针，左上角为0号点
@@ -30,15 +34,68 @@ void getTarget2dPoints(cv::RotatedRect object_rect)
 	Point2f lu, ld, ru, rd;
 	sort(begin(vertices), end(vertices), [](const cv::Point2f& p1, const cv::Point2f& p2) { return p1.x + p1.y < p2.x + p2.y; });
 }
+Point getNextPoint(Point p,Point c_p)
+{
+  Point t_p,n_p,f_p;
+  t_p.x=p.x-c_p.x;
+  t_p.y=p.y-c_p.y;
+  n_p.x=t_p.x*cos((72*PI)/180.0)-t_p.y*sin((72*PI)/180.0);
+  n_p.y=t_p.x*sin((72*PI)/180.0)+t_p.y*cos((72*PI)/180.0);
+  f_p.x=n_p.x+c_p.x;
+  f_p.y=n_p.y+c_p.y;
+  return f_p;
+}
+double out_angle(Point p,Point c_p)
+{
+  if((p.x - c_p.x)==0)
+    p.x+=1;
+  double p_angle = abs(atan(double(p.y - c_p.y) / double(p.x - c_p.x)));
+  if(p.y - c_p.y>0)
+    p_angle*=-1;
+	p_angle = p_angle * 180 / PI;
+  return p_angle;
+}
+// Point getNextPoint(Point p,Point c_p)
+// {
+//   float t_line=pow(2*(pow(p.x-c_p.x,2)+pow(p.y-c_p.y,2))*(1-((pow(5,0.5)-1)/4)),0.5);
+//   cout<<t_line;
+//   if((p.x - c_p.x)==0)
+//   p.x+=1;
+//   double a = abs(atan((p.y - c_p.y) / (p.x - c_p.x)));
+//   if(p.y - c_p.y>0)
+//     a*=-1;
+//   if(a<0)
+//   {
+//     cout<<p<<endl<<Point(p.x-t_line*cos((float(54*PI)/180.0)-abs(a)),p.y+t_line*sin((float(54*PI)/180.0)-abs(a)))<<endl<<a<<endl<<"----------------------------------------"<<endl;
+//     return Point(p.x-t_line*cos(((54*PI)/180.0)-abs(a)),p.y+t_line*sin(((54*PI)/180.0)-abs(a)));
+//   }
+    
+//   else
+//   {
+//     cout<<p<<endl<<Point(p.x+t_line*cos((float(54*PI)/180.0)-abs(a)),p.y-t_line*sin((float(54*PI)/180.0)-abs(a)))<<endl<<a<<endl<<"----------------------------------------"<<endl;
+//     return Point(p.x+t_line*cos((float(54*PI)/180.0)-abs(a)),p.y-t_line*sin((float(54*PI)/180.0)-abs(a)));
+//   }
+    
+// }
+
 int main()
 {
-	VideoCapture cap("../resources/test2.mp4");
+  //卡尔曼初始化
+  KalmanFilter KF(4, 2, 0);                        //定义卡尔曼滤波器
+  Mat measurement = Mat::zeros(2, 1, CV_32F);      //初始测量值x'(0)，因为后面要更新这个值，所以必须先定义
+  KF.transitionMatrix = (Mat_<float>(4, 4) << 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1); //转移矩阵A
+  setIdentity(KF.measurementMatrix);  //测量矩阵H:单位矩阵化
+  setIdentity(KF.processNoiseCov, Scalar::all(1));  //系统噪声方差矩阵Q
+  setIdentity(KF.measurementNoiseCov, Scalar::all(1e-60));  //测量噪声方差矩阵R
+  setIdentity(KF.errorCovPost, Scalar::all(10000)); //后验错误估计协方差矩阵P
+
+	VideoCapture cap("../resources/test2.avi");
 
 	//**设置三维坐标**//
-	point3d.push_back(Point3f(-half_x, half_y, 0));
-	point3d.push_back(Point3f(half_x, half_y, 0));
-	point3d.push_back(Point3f(half_x, -half_y, 0));
-	point3d.push_back(Point3f(-half_x, -half_y, 0));
+	point3d.push_back(Point3f(0, 0, 0));
+	point3d.push_back(Point3f(x, 0, 0));
+	point3d.push_back(Point3f(x, y, 0));
+	point3d.push_back(Point3f(0, y, 0));
 
 	//调整识别的颜色//
 	namedWindow("control", WINDOW_NORMAL);
@@ -73,6 +130,9 @@ int main()
 		{
 			break;
 		}
+    // resize(src, src, Size(640, 480), cv::INTER_AREA);
+    // resize(temp, temp, Size(640, 480), cv::INTER_AREA);
+
 		cvtColor(src, temp, COLOR_BGR2HSV);//转为HSV图
 		
 		GaussianBlur(temp, temp, Size(7, 7), 3, 0);
@@ -127,7 +187,7 @@ int main()
 			}
 
 
-
+      //目标
 			if (hehierarchy[i][2] != -1)
 				son = hehierarchy[i][2];
 			if(son!=-1)
@@ -159,7 +219,7 @@ int main()
 					rect.points(point.data());//返回rect中的四个顶点到<Point2f>数组中.
 					for (int k = 0; k < 4; k++)//画矩形
 					{
-						line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 255, 0), 1, 8);
+						line(src, point.at(k), point.at((k + 1) % 4), Scalar(0, 0, 255), 1, 8);
 					}
 					two_centre[1] = rect.center;
 
@@ -201,16 +261,41 @@ int main()
 			//}
 		//}
 
-		double angle = abs(atan((two_centre[1].y - two_centre[0].y) / (two_centre[1].x - two_centre[0].x)));
+		double angle = abs(atan(double(two_centre[1].y - two_centre[0].y) / double(two_centre[1].x - two_centre[0].x)));
+    if(two_centre[1].y - two_centre[0].y>0)
+      angle*=-1;
 		angle = angle * 180 / PI;
 		putText(src, "angle:" + to_string(angle), Point(50, 50), 1, 1, Scalar(0, 255, 100), 2);
 
-		
 
-		
+		//预测
+    measurement.at<float>(0) = (float)two_centre[1].x;
+		measurement.at<float>(1) = (float)two_centre[1].y;               //update measurement
+    KF.correct(measurement);                                         //update
+    Mat prediction = KF.predict();
+    Point predict_pt = Point(prediction.at<float>(0), prediction.at<float>(1));     //预测值(x',y')
+    circle(src, predict_pt, 10, Scalar(255, 255, 0) );
+    
+    if((predict_pt.x - two_centre[0].x)==0)
+      predict_pt.x+=1;
+    double p_angle = abs(atan(double(predict_pt.y - two_centre[0].y) / double(predict_pt.x - two_centre[0].x)));
+    if(predict_pt.y - two_centre[0].y>0)
+      p_angle*=-1;
+	  p_angle = p_angle * 180 / PI;
 
 
-
+    circle(src, getNextPoint(predict_pt,two_centre[0]), 10, Scalar(100, 255, 23),-1 );
+    circle(src, getNextPoint(getNextPoint(predict_pt,two_centre[0]),two_centre[0]), 10, Scalar(100, 255, 23),-1 );
+    circle(src, getNextPoint(getNextPoint(getNextPoint(predict_pt,two_centre[0]),two_centre[0]),two_centre[0]), 10, Scalar(100, 255, 23),-1 );
+    circle(src, getNextPoint(getNextPoint(getNextPoint(getNextPoint(predict_pt,two_centre[0]),two_centre[0]),two_centre[0]),two_centre[0]), 10, Scalar(100, 255, 23),-1 );
+    
+    cout<<"angle:"<<angle<<endl;
+    cout<<"p_angle1:"<<out_angle(predict_pt,two_centre[0])<<endl;
+    cout<<"p_angle2:"<<out_angle(getNextPoint(predict_pt,two_centre[0]),two_centre[0])<<endl;
+    cout<<"p_angle3:"<<out_angle(getNextPoint(getNextPoint(predict_pt,two_centre[0]),two_centre[0]),two_centre[0])<<endl;
+    cout<<"p_angle4:"<<out_angle(getNextPoint(getNextPoint(getNextPoint(predict_pt,two_centre[0]),two_centre[0]),two_centre[0]),two_centre[0])<<endl;
+    cout<<"p_angle5:"<<out_angle(getNextPoint(getNextPoint(getNextPoint(getNextPoint(predict_pt,two_centre[0]),two_centre[0]),two_centre[0]),two_centre[0]),two_centre[0])<<endl;
+    cout<<"---------------------------------------------------"<<endl;
 
 
 
@@ -218,12 +303,18 @@ int main()
 		imshow("test", temp);
 		imshow("src", src);
 
-		//esc退出
-		if (waitKey(1000 / cap.get(CAP_PROP_FPS)) == 27)
-		{
+    int k = waitKey(30);
+		if (k == 27)
 			break;
+		else if (k == 32)
+		{
+			while (waitKey(0) != 32)
+				waitKey(0);
 		}
+    
+    
 
+     
 	}
 	return 0;
 

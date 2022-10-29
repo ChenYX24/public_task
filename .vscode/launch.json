@@ -1,28 +1,35 @@
 {
-
-  "version": "0.2.0",
   "configurations": [
       {
-          "name": "opencv debuge",
+          "name": "C/C++: cpp 生成和调试活动文件",
           "type": "cppdbg",
           "request": "launch",
-          "program": "${workspaceFolder}\\Debugger\\${fileBasenameNoExtension}.exe",
-          //上面这个Debugger是我自己定义的，为了方便放置生成的exe文件
-          "args": [],
-          "stopAtEntry": false, //这里如果为 false，则说明调试直接运行。（反之则停止）
-          "cwd": "${workspaceFolder}",
+          "program": "${fileDirname}/${fileBasenameNoExtension}.out",
+          "args": [
+              "`pkg-config","--libs","--cflags","opencv4`",
+          ],
+          "stopAtEntry": false,
+          "cwd": "${fileDirname}",
           "environment": [],
-          "externalConsole": true,//是否调用外部cmd
+          "externalConsole": false,
           "MIMode": "gdb",
-          "miDebuggerPath": "F:\\mingw64\\bin\\gdb.exe",//自己进行设置
           "setupCommands": [
               {
                   "description": "为 gdb 启用整齐打印",
                   "text": "-enable-pretty-printing",
-                  "ignoreFailures": false
+                  "ignoreFailures": true
+              },
+              {
+                  "description": "将反汇编风格设置为 Intel",
+                  "text": "-gdb-set disassembly-flavor intel",
+                  "ignoreFailures": true
               }
           ],
-          "preLaunchTask": "opencv3.5.2"
+          "preLaunchTask": "C/C++: g++ build active file",		//要和 task.json的label字段一致
+          "miDebuggerPath": "/usr/bin/gdb",
+          //下面这行命令可以去除Vscode中编译后出现 [1]+   Done....  的提示
+          "miDebuggerArgs": "-q -ex quit; wait() { fg >/dev/null; }; /usr/bin/gdb -q --interpreter=mi"
       }
-  ]
+  ],
+  "version": "2.0.0"
 }

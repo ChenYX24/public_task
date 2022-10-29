@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../modules/assembly1/include/robotlab/assembly1.h
+
+/home/cyx/CMake_II-master/modules/assembly1/test/assembly1_test.cpp
+iostream
+-
+robotlab/assembly1.h
+/home/cyx/CMake_II-master/modules/assembly1/test/robotlab/assembly1.h
+
