@@ -7,6 +7,7 @@
 #include <algorithm>
 using namespace std;
 using namespace cv;
+
 int hue = 168;                      //色调
 int saturation = 58;                //饱和度
 int contrast = 15;                  //对比度
@@ -14,9 +15,6 @@ int brightness = 0;                 //亮度
 int exposure = 0;                   //曝光
 vector<Point3f> point3d;            //三维坐标
 vector<Point2f> object2d_point;     //二维坐标
-vector<vector<Point2f>> last_point; //上次的二维坐标
-float half_x = 4.21875;
-float half_y = 13.25;
 float x = 23.0;
 float y = 12.7/3;//light,not all
 int num = 0; //计数器
@@ -29,6 +27,7 @@ int highS = 248;
 int highV = 255;
 //明确点用以框出物体
 Point2f points_l; // centre point
+
 void getTarget2dPoints(cv::RotatedRect object_rect, std::vector<Point2f> &object2d_point)
 { //获取像素坐标，顺时针，左上角为0号点
   Point2f vertices[4];
@@ -41,12 +40,13 @@ void getTarget2dPoints(cv::RotatedRect object_rect, std::vector<Point2f> &object
   for (int i = 0; i < 4; i++)
     object2d_point.push_back(vertices[i]);
 }
+
+
 int main()
 {
   //卡尔曼初始化
-
-  KalmanFilter KF(4, 2, 0);                                                                    //定义卡尔曼滤波器
-  Mat measurement = Mat::zeros(2, 1, CV_32F);                                         //初始测量值x'(0)，因为后面要更新这个值，所以必须先定义
+  KalmanFilter KF(4, 2, 0);                     //定义卡尔曼滤波器
+  Mat measurement = Mat::zeros(2, 1, CV_32F);   //初始测量值x'(0)，因为后面要更新这个值，所以必须先定义
   KF.transitionMatrix = (Mat_<float>(4, 4) << 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1); //转移矩阵A
   setIdentity(KF.measurementMatrix);  //测量矩阵H:单位矩阵化
   setIdentity(KF.processNoiseCov, Scalar::all(1));  //系统噪声方差矩阵Q
@@ -223,7 +223,6 @@ int main()
     // for(int i=0;i<points.size();i++)
     //	for(int k=0;k<4;k++)
     //		points_f.push_back(points.at(i).at(k));
-
     if (points.size() == 4)
     {
 
@@ -243,7 +242,7 @@ int main()
       line(src, points.at(1), points.at(3), Scalar(0, 0, 255), 2);
       points_l = Point2f((points.at(0).x + points.at(2).x) / 2, (points.at(0).y + points.at(2).y) / 2);
       circle(src, points_l, 3, Scalar(0, 255, 120), -1);
-
+      
       /*测试数据*/
       Matx33d cam_matrix = {1.6041191539594568e+03, 0, 6.3983687194220943e+02,
                             0, 1.6047833493341714e+03, 5.1222951297937527e+02,
@@ -259,7 +258,6 @@ int main()
       solvePnP(point3d, points, cam_matrix, distortion_coeff, rvec, tvec); // PnP
       Rodrigues(rvec, rotM);                                               //将旋转向量变换成旋转矩阵
       Rodrigues(tvec, rotT);                                               //将平移向量变成平移矩阵
-
       double tx = tvec(0);
       double ty = tvec(1);
       double tz = tvec(2);

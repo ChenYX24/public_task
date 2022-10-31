@@ -128,7 +128,7 @@
 
 2-1.V模型![v](./md_resources/v.jpg)
 
-2-2.W模型![w](D:\Git\public_task\md_resources\w.jpg)
+2-2.W模型![w](./md_resources/w.jpg)
 
 2-3.H模型
 
