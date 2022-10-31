@@ -12,27 +12,21 @@
 using namespace std;
 using namespace cv;
 
+#define PI acos(-1)
 
 
-
-
-
-
-
-
-
-
-
-class match
+class energyAngle
 {
 private:
-  Point lastPt;
-  Point2f pl;
+  double A;
 public:
-  match(){};
-  void run(Mat src,vector<Point2f> points,Point2f points_l);
-  Point getPoint(){return this->pl;};
-  ~match();
+  energyAngle(){};
+  energyAngle(Mat src,Point2f two_centre[]);
+  void preAngle(Mat src ,Point2f two_centre[],Point predict_pt,double angle);
+  double getA(){return this->A;};
+  Point getNextPoint(Point p,Point c_p);
+  double out_angle(Point p,Point c_p);
+  ~energyAngle(){};
 };
 
 class detect
@@ -41,16 +35,15 @@ private:
   vector<vector<Point>> contours;
   vector<Vec4i> hehierarchy;
 
-  vector<Point2f> points;
+  Point2f two_centre[2];
 
-  Point2f temp_p;
-  Point2f temp_p2;
+
 public:
   detect(){};
-  vector<Point2f> getPoints(){return this->points;};
+  Point2f getPoint1(){return this->two_centre[0];};
+  Point2f getPoint2(){return this->two_centre[1];};
   void clearPoints(){};
   detect(Mat src,Mat temp);
-  void getTarget2dPoints(cv::RotatedRect object_rect, std::vector<Point2f> &object2d_point);
   ~detect();
 };
 
@@ -64,11 +57,11 @@ Matx<double, 5, 1> distortion_coeff = {-6.4910709385278609e-01, 8.69143287874269
        5.1733428362687644e-03, -4.1111054148847371e-03, 0.};
 
   float x = 23.0;
-  float y = 12.7/3;//light,not all
+  float y = 12.7;//light,not all
   vector<Point3f> point3d;            //三维坐标
 public:
   Distance();
-  void run(Mat src,vector<Point2f> points);
+  void run(vector<Point2f> point);
   void initPoint3d();
   ~Distance();
 };
@@ -79,55 +72,43 @@ private:
   Mat measurement = Mat::zeros(2, 1, CV_32F);   //初始测量值x'(0)，因为后面要更新这个值，所以必须先定义
 public:
   pretreat();
-  void run(Mat src,Point2f points_l);
+  void run(Mat src,Point2f two_centre[],double angle);
   void initPretreat();
   void lastPoint();
   ~pretreat();
 };
 
 
-
-
-
-
-
-class armor_detector
+class energy_detector
 {
   public:
-  armor_detector();
-  armor_detector(string path);//load
+  energy_detector();
+  energy_detector(string path);//load
   VideoCapture getCap();
   void initVideos();
   void run();
   void show();
   
-  ~armor_detector();
+  ~energy_detector();
   private:
   //初始化识别颜色
-  int lowH = 0;
-  int lowS = 80;
-  int lowV = 158;
-  int highH = 64;
-  int highS = 248;
+  int lowH = 70;
+  int lowS = 50;
+  int lowV = 50;
+  int highH = 120;
+  int highS = 255;
   int highV = 255;
   //明确点用以框出物体
-  Point2f points_l; // centre point
+  Point2f two_centre[2];
+
 
 
   VideoCapture cap;
   Mat src,temp;
   
-  double X = 0;
-  double Y = 0;
-  double Z = 0;
-  double DIS = 0;
-  int size = 0;
   vector<Point2f> points;
   
   Point lastPt;
   
+  double angle;
 };
-
-
-
-

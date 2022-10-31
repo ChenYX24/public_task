@@ -6,6 +6,8 @@ Distance::Distance()
 }
 void Distance::run(Mat src,vector<Point2f> points)
 {
+  swap(points[0], points[2]);
+  swap(points[1], points[2]);
   /*测距*/
   Matx31f tvec;
   Matx33f rotM;
@@ -13,6 +15,7 @@ void Distance::run(Mat src,vector<Point2f> points)
   Matx33f rotT;
   Rodrigues(rotM, rvec);                                               //将旋转矩阵变换成旋转向量
   solvePnP(point3d, points, cam_matrix, distortion_coeff, rvec, tvec); // PnP
+  cout<<point3d<<endl<<points<<endl<<cam_matrix<<endl<<distortion_coeff<<endl;
   Rodrigues(rvec, rotM);                                               //将旋转向量变换成旋转矩阵
   Rodrigues(tvec, rotT);                                              //将平移向量变成平移矩阵
   double tx = tvec(0);

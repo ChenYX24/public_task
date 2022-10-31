@@ -17,7 +17,7 @@ int highS = 255;
 int highV = 255;
 Point2f two_centre[2];
 #define PI acos(-1)
-bool flag=false;
+
 
 float x = 23.0;
 float y = 12.7;
