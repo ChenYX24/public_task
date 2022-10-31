@@ -14,7 +14,7 @@ void Distance::run(Mat src,vector<Point2f> points)
   Rodrigues(rotM, rvec);                                               //将旋转矩阵变换成旋转向量
   solvePnP(point3d, points, cam_matrix, distortion_coeff, rvec, tvec); // PnP
   Rodrigues(rvec, rotM);                                               //将旋转向量变换成旋转矩阵
-  Rodrigues(tvec, rotT);                                               //将平移向量变成平移矩阵
+  Rodrigues(tvec, rotT);                                              //将平移向量变成平移矩阵
   double tx = tvec(0);
   double ty = tvec(1);
   double tz = tvec(2);
