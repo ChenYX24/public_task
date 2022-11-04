@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/multiply_test.dir/multiply_test.cpp.o  -o multiply_test  /usr/local/lib/libgtest.a ../src/multiply/libmultiply.a -lpthread -lgtest_main 

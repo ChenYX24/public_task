@@ -32,18 +32,6 @@ algorithm
 ../include/armor_detector.h
 /home/cyx/public_task/armor_detector/include/armor_detector.h
 
-/home/cyx/public_task/armor_detector/src/distance.cpp
-../include/armor_detector.h
-/home/cyx/public_task/armor_detector/include/armor_detector.h
-
-/home/cyx/public_task/armor_detector/src/match.cpp
-../include/armor_detector.h
-/home/cyx/public_task/armor_detector/include/armor_detector.h
-
-/home/cyx/public_task/armor_detector/src/pretreat.cpp
-../include/armor_detector.h
-/home/cyx/public_task/armor_detector/include/armor_detector.h
-
 /usr/local/include/opencv4/opencv2/calib3d.hpp
 opencv2/core.hpp
 /usr/local/include/opencv4/opencv2/opencv2/core.hpp

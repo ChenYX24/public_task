@@ -78,6 +78,17 @@ edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+
+.PHONY : test/fast
+
 # The main all target
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/cyx/public_task/armor_detector/build/CMakeFiles /home/cyx/public_task/armor_detector/build/CMakeFiles/progress.marks
@@ -135,6 +146,19 @@ armor_detector: cmake_check_build_system
 armor_detector/fast:
 	$(MAKE) -f CMakeFiles/armor_detector.dir/build.make CMakeFiles/armor_detector.dir/build
 .PHONY : armor_detector/fast
+
+#=============================================================================
+# Target rules for targets named armor_detector_test
+
+# Build rule for target.
+armor_detector_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 armor_detector_test
+.PHONY : armor_detector_test
+
+# fast build rule for target.
+armor_detector_test/fast:
+	$(MAKE) -f CMakeFiles/armor_detector_test.dir/build.make CMakeFiles/armor_detector_test.dir/build
+.PHONY : armor_detector_test/fast
 
 main.o: main.cpp.o
 
@@ -298,6 +322,33 @@ src/pretreat.cpp.s:
 	$(MAKE) -f CMakeFiles/SRC.dir/build.make CMakeFiles/SRC.dir/src/pretreat.cpp.s
 .PHONY : src/pretreat.cpp.s
 
+test/armor_detector_test.o: test/armor_detector_test.cpp.o
+
+.PHONY : test/armor_detector_test.o
+
+# target to build an object file
+test/armor_detector_test.cpp.o:
+	$(MAKE) -f CMakeFiles/armor_detector_test.dir/build.make CMakeFiles/armor_detector_test.dir/test/armor_detector_test.cpp.o
+.PHONY : test/armor_detector_test.cpp.o
+
+test/armor_detector_test.i: test/armor_detector_test.cpp.i
+
+.PHONY : test/armor_detector_test.i
+
+# target to preprocess a source file
+test/armor_detector_test.cpp.i:
+	$(MAKE) -f CMakeFiles/armor_detector_test.dir/build.make CMakeFiles/armor_detector_test.dir/test/armor_detector_test.cpp.i
+.PHONY : test/armor_detector_test.cpp.i
+
+test/armor_detector_test.s: test/armor_detector_test.cpp.s
+
+.PHONY : test/armor_detector_test.s
+
+# target to generate assembly for a file
+test/armor_detector_test.cpp.s:
+	$(MAKE) -f CMakeFiles/armor_detector_test.dir/build.make CMakeFiles/armor_detector_test.dir/test/armor_detector_test.cpp.s
+.PHONY : test/armor_detector_test.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -306,8 +357,10 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... test"
 	@echo "... SRC"
 	@echo "... armor_detector"
+	@echo "... armor_detector_test"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
@@ -326,6 +379,9 @@ help:
 	@echo "... src/pretreat.o"
 	@echo "... src/pretreat.i"
 	@echo "... src/pretreat.s"
+	@echo "... test/armor_detector_test.o"
+	@echo "... test/armor_detector_test.i"
+	@echo "... test/armor_detector_test.s"
 .PHONY : help
 
 

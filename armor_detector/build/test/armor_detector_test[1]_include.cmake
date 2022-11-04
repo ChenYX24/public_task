@@ -1,0 +1,5 @@
+if(EXISTS "/home/cyx/public_task/armor_detector/build/test/armor_detector_test[1]_tests.cmake")
+  include("/home/cyx/public_task/armor_detector/build/test/armor_detector_test[1]_tests.cmake")
+else()
+  add_test(armor_detector_test_NOT_BUILT armor_detector_test_NOT_BUILT)
+endif()

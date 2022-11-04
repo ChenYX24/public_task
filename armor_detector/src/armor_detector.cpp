@@ -11,7 +11,6 @@ armor_detector::~armor_detector()
 }
 armor_detector::armor_detector(string path)
 {
-  
   VideoCapture cap_temp(path);
   cap=cap_temp;
  //调整识别的颜色//
@@ -22,6 +21,15 @@ armor_detector::armor_detector(string path)
  createTrackbar("highH", "control", &highH, 180);
  createTrackbar("highS", "control", &highS, 255);
  createTrackbar("highV", "control", &highV, 255);
+}
+void armor_detector::readImg(string path)
+{
+  Mat src1=imread(path);
+  src=src1;
+  temp=src;
+  cvtColor(src, temp, COLOR_BGR2HSV);                                         //转为HSV图
+  GaussianBlur(temp, temp, Size(7, 7), 5, 0);                                 //高斯滤波
+  inRange(temp, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), temp); //二值化
 }
 VideoCapture armor_detector::getCap()
 {
@@ -75,7 +83,6 @@ void armor_detector::run()
     points=DETECT.getPoints();
     if (points.size() == 4)
     {
-      cout<<points<<endl;
       match MATCH;
       MATCH.run(src,points,points_l);
       points_l=MATCH.getPoint();

@@ -1,0 +1,14 @@
+/home/cyx/public_task/GTEST/build/CMakeFiles/rebuild_cache.dir
+/home/cyx/public_task/GTEST/build/CMakeFiles/edit_cache.dir
+/home/cyx/public_task/GTEST/build/CMakeFiles/test.dir
+/home/cyx/public_task/GTEST/build/src/CMakeFiles/rebuild_cache.dir
+/home/cyx/public_task/GTEST/build/src/CMakeFiles/edit_cache.dir
+/home/cyx/public_task/GTEST/build/src/CMakeFiles/test.dir
+/home/cyx/public_task/GTEST/build/src/multiply/CMakeFiles/rebuild_cache.dir
+/home/cyx/public_task/GTEST/build/src/multiply/CMakeFiles/edit_cache.dir
+/home/cyx/public_task/GTEST/build/src/multiply/CMakeFiles/test.dir
+/home/cyx/public_task/GTEST/build/src/multiply/CMakeFiles/multiply.dir
+/home/cyx/public_task/GTEST/build/tests/CMakeFiles/rebuild_cache.dir
+/home/cyx/public_task/GTEST/build/tests/CMakeFiles/edit_cache.dir
+/home/cyx/public_task/GTEST/build/tests/CMakeFiles/test.dir
+/home/cyx/public_task/GTEST/build/tests/CMakeFiles/multiply_test.dir

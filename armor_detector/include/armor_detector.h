@@ -50,6 +50,7 @@ public:
   vector<Point2f> getPoints(){return this->points;};
   void clearPoints(){};
   detect(Mat src,Mat temp);
+  void d_image(Mat src,Mat temp);
   void getTarget2dPoints(cv::RotatedRect object_rect, std::vector<Point2f> &object2d_point);
   ~detect();
 };
@@ -100,7 +101,9 @@ class armor_detector
   void initVideos();
   void run();
   void show();
-  
+  void readImg(string path);
+  Mat getSrc(){return src;};
+  Mat getTemp(){return temp;};
   ~armor_detector();
   private:
   //初始化识别颜色

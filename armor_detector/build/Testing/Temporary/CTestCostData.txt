@@ -1,0 +1,3 @@
+armor_detector_tests 6 0
+---
+armor_detector_tests

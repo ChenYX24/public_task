@@ -1,0 +1,2 @@
+/usr/bin/ar qc libarmor_detector_test1.a  CMakeFiles/armor_detector_test1.dir/__/src/armor_detector.cpp.o CMakeFiles/armor_detector_test1.dir/__/src/detect.cpp.o CMakeFiles/armor_detector_test1.dir/__/src/distance.cpp.o CMakeFiles/armor_detector_test1.dir/__/src/match.cpp.o CMakeFiles/armor_detector_test1.dir/__/src/pretreat.cpp.o
+/usr/bin/ranlib libarmor_detector_test1.a

@@ -55,19 +55,41 @@ CMAKE_BINARY_DIR = /home/cyx/public_task/armor_detector/build
 # The main recursive "all" target.
 all: CMakeFiles/SRC.dir/all
 all: CMakeFiles/armor_detector.dir/all
+all: CMakeFiles/armor_detector_test.dir/all
+all: test/all
 
 .PHONY : all
 
 # The main recursive "preinstall" target.
-preinstall:
+preinstall: test/preinstall
 
 .PHONY : preinstall
 
 # The main recursive "clean" target.
 clean: CMakeFiles/SRC.dir/clean
 clean: CMakeFiles/armor_detector.dir/clean
+clean: CMakeFiles/armor_detector_test.dir/clean
+clean: test/clean
 
 .PHONY : clean
+
+#=============================================================================
+# Directory level rules for directory test
+
+# Recursive "all" directory target.
+test/all:
+
+.PHONY : test/all
+
+# Recursive "preinstall" directory target.
+test/preinstall:
+
+.PHONY : test/preinstall
+
+# Recursive "clean" directory target.
+test/clean:
+
+.PHONY : test/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/SRC.dir
@@ -122,6 +144,33 @@ armor_detector: CMakeFiles/armor_detector.dir/rule
 CMakeFiles/armor_detector.dir/clean:
 	$(MAKE) -f CMakeFiles/armor_detector.dir/build.make CMakeFiles/armor_detector.dir/clean
 .PHONY : CMakeFiles/armor_detector.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/armor_detector_test.dir
+
+# All Build rule for target.
+CMakeFiles/armor_detector_test.dir/all: CMakeFiles/SRC.dir/all
+	$(MAKE) -f CMakeFiles/armor_detector_test.dir/build.make CMakeFiles/armor_detector_test.dir/depend
+	$(MAKE) -f CMakeFiles/armor_detector_test.dir/build.make CMakeFiles/armor_detector_test.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/cyx/public_task/armor_detector/build/CMakeFiles --progress-num=9,10 "Built target armor_detector_test"
+.PHONY : CMakeFiles/armor_detector_test.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/armor_detector_test.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cyx/public_task/armor_detector/build/CMakeFiles 8
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/armor_detector_test.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cyx/public_task/armor_detector/build/CMakeFiles 0
+.PHONY : CMakeFiles/armor_detector_test.dir/rule
+
+# Convenience name for target.
+armor_detector_test: CMakeFiles/armor_detector_test.dir/rule
+
+.PHONY : armor_detector_test
+
+# clean rule for target.
+CMakeFiles/armor_detector_test.dir/clean:
+	$(MAKE) -f CMakeFiles/armor_detector_test.dir/build.make CMakeFiles/armor_detector_test.dir/clean
+.PHONY : CMakeFiles/armor_detector_test.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

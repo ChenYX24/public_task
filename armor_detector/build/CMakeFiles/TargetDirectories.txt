@@ -1,4 +1,9 @@
 /home/cyx/public_task/armor_detector/build/CMakeFiles/rebuild_cache.dir
 /home/cyx/public_task/armor_detector/build/CMakeFiles/edit_cache.dir
+/home/cyx/public_task/armor_detector/build/CMakeFiles/test.dir
 /home/cyx/public_task/armor_detector/build/CMakeFiles/SRC.dir
 /home/cyx/public_task/armor_detector/build/CMakeFiles/armor_detector.dir
+/home/cyx/public_task/armor_detector/build/CMakeFiles/armor_detector_test.dir
+/home/cyx/public_task/armor_detector/build/test/CMakeFiles/rebuild_cache.dir
+/home/cyx/public_task/armor_detector/build/test/CMakeFiles/edit_cache.dir
+/home/cyx/public_task/armor_detector/build/test/CMakeFiles/test.dir

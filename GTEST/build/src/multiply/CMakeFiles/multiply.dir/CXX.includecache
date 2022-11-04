@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../src/multiply/include/multiply/multiply.h
+
+/home/cyx/public_task/GTEST/src/multiply/multiply.cpp
+multiply/multiply.h
+-
+
